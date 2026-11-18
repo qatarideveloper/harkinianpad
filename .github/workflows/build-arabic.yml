@@ -1,0 +1,48 @@
+name: Build HarkinianPad (Arabic)
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: Mac to build on
+        required: true
+        default: macos-15
+        type: choice
+        options:
+          - macos-15
+          - macos-15-intel
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 300
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      HOMEBREW_NO_INSTALL_CLEANUP: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+      - name: Use the newest Xcode 26
+        run: |
+          xcode=$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)
+          echo "DEVELOPER_DIR=$xcode/Contents/Developer" >> "$GITHUB_ENV"
+          echo "Using $xcode"
+      - name: Build tools
+        run: brew install cmake ninja pkgconf sdl2 glew nlohmann-json libpng libzip tinyxml2 libogg libvorbis opus opusfile sdl2_net
+      - name: Safety check
+        run: scripts/check-repo-safety.sh
+      - name: Build
+        run: scripts/build-ios.sh --device
+      - name: Package
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          scripts/package-ios.sh build-ios-soh/soh/Release-iphoneos/HarkinianPad.app "$RUNNER_TEMP/out/HarkinianPad-Arabic.ipa"
+          cd "$RUNNER_TEMP/out" && shasum -a 256 ./*.ipa | tee SHA256SUMS
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: harkinianpad-arabic-${{ github.run_number }}
+          path: |
+            ${{ runner.temp }}/out/*.ipa
+            ${{ runner.temp }}/out/SHA256SUMS

@@ -3,8 +3,8 @@
   "components": [
     {
       "name": "Shipwright",
-      "url": "https://github.com/chrissotraidis/Shipwright.git",
-      "commit": "59224fdd4698fdd308ed65d7faa31861b285acee",
+      "url": "https://github.com/qatarideveloper/Shipwright.git",
+      "commit": "18626e69fd9e265870ae97061142d106a7d5c1ad",
       "path": "sources/Shipwright",
       "patches": [],
       "upstream_url": "https://github.com/HarbourMasters/Shipwright.git",
